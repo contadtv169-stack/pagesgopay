@@ -20,7 +20,12 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo 3. Building Android APK...
+echo 3. Patching Java version to 17...
+powershell -Command "(Get-Content 'node_modules\@capacitor\android\capacitor\build.gradle') -replace 'VERSION_21', 'VERSION_17' | Set-Content 'node_modules\@capacitor\android\capacitor\build.gradle'"
+powershell -Command "(Get-Content 'android\app\capacitor.build.gradle') -replace 'VERSION_21', 'VERSION_17' | Set-Content 'android\app\capacitor.build.gradle'"
+
+echo.
+echo 4. Building Android APK...
 cd android
 call gradlew assembleDebug
 if %ERRORLEVEL% neq 0 (
@@ -29,15 +34,20 @@ if %ERRORLEVEL% neq 0 (
     echo Make sure you have:
     echo   - Android SDK installed
     echo   - local.properties pointing to your SDK path
-    echo   - Java 17+
+    echo   - Java 17+ (install from https://adoptium.net/)
     cd ..
     exit /b 1
 )
 
+cd ..
+
 echo.
 echo ========================================
 echo  APK generated successfully!
-echo  Location: android/app/build/outputs/apk/debug/
+echo  Location: android/app/build/outputs/apk/debug/app-debug.apk
+echo  Copy: GoPay-APK.apk
 echo ========================================
-cd ..
+echo.
+copy /Y "android\app\build\outputs\apk\debug\app-debug.apk" "GoPay-APK.apk"
+echo  APK copied to GoPay-APK.apk
 pause
