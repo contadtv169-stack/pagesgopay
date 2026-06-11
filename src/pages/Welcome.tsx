@@ -72,7 +72,7 @@ export function Welcome() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 + i * 0.1 }}
-              className="flex items-center gap-3 bg-[#F5F7FA] rounded-card p-4"
+              className="flex items-center gap-3 bg-[#F5F7FA] rounded-xl p-4"
             >
               <div className="w-10 h-10 rounded-full bg-[#0066FF]/10 flex items-center justify-center shrink-0">
                 <b.icon size={20} color="#0066FF" />
