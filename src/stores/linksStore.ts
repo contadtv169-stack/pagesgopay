@@ -19,6 +19,69 @@ export interface PaymentLink {
   createdAt: string
   expiresAt?: string
   gatewayType?: string
+
+  // Cakto-style customization fields
+  title?: string
+  subtitle?: string
+  bannerImage?: string
+  bannerVideo?: string
+  logoImage?: string
+  brandColor?: string
+  fontFamily?: string
+  showCountdown?: boolean
+  countdownMinutes?: number
+  reviews?: Review[]
+  faqs?: FAQ[]
+  quiz?: Quiz
+  trustBadges?: string[]
+  bonusText?: string
+  guaranteeText?: string
+  buttonText?: string
+  thankYouMessage?: string
+  thankYouVideo?: string
+  redirectUrl?: string
+  customerFields?: string[]
+
+  // Payment transactions with customer data
+  transactions?: Transaction[]
+}
+
+export interface Transaction {
+  id: string
+  customerName: string
+  customerEmail: string
+  amount: number
+  status: 'pending' | 'paid' | 'expired'
+  date: string
+  paymentMethod?: string
+  transactionId?: string
+}
+
+export interface Review {
+  id: string
+  name: string
+  avatar?: string
+  rating: number
+  text: string
+  date: string
+}
+
+export interface FAQ {
+  id: string
+  question: string
+  answer: string
+}
+
+export interface Quiz {
+  id: string
+  questions: QuizQuestion[]
+}
+
+export interface QuizQuestion {
+  id: string
+  question: string
+  options: string[]
+  correctAnswer?: number
 }
 
 interface LinksState {

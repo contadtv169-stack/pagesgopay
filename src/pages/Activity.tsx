@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, CheckCircle2, Clock, XCircle, BarChart3, DollarSign } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, XCircle, BarChart3, DollarSign, User } from 'lucide-react'
 import { useLinksStore } from '../stores/linksStore'
+import type { Transaction } from '../stores/linksStore'
 
 const periods = [
   { label: 'Hoje', value: 'today' },
@@ -16,38 +17,29 @@ export function Activity() {
   const links = useLinksStore((s) => s.links)
   const [period, setPeriod] = useState('all')
 
-  const transactions = links.flatMap((link) => {
-    const items: { id: string; description: string; amount: number; status: string; date: string }[] = []
-    if (link.payments > 0) {
-      for (let i = 0; i < link.payments; i++) {
-        items.push({
-          id: `${link.id}-${i}`,
-          description: link.description,
-          amount: link.amount,
-          status: 'paid',
-          date: link.createdAt,
-        })
-      }
-    }
-    if (items.length === 0) {
-      items.push({
-        id: link.id,
-        description: link.description,
+  const allTransactions: (Transaction & { linkDescription: string })[] = links.flatMap((link) => {
+    const txs = link.transactions || []
+    if (txs.length === 0) {
+      return [{
+        id: link.id + '-pending',
+        customerName: '—',
+        customerEmail: '—',
         amount: link.amount,
-        status: 'pending',
+        status: 'pending' as const,
         date: link.createdAt,
-      })
+        linkDescription: link.description,
+      }]
     }
-    return items
+    return txs.map((tx) => ({ ...tx, linkDescription: link.description }))
   })
 
-  const filtered = transactions.filter((t) => {
+  const filtered = allTransactions.filter((t) => {
     if (period === 'all') return true
     const days = period === 'today' ? 0 : period === '7d' ? 7 : 30
     const d = new Date()
     d.setDate(d.getDate() - days)
     return new Date(t.date) >= d
-  })
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const total = filtered.reduce((sum, t) => sum + (t.status === 'paid' ? t.amount : 0), 0)
 
@@ -79,7 +71,7 @@ export function Activity() {
             <button
               key={p.value}
               onClick={() => setPeriod(p.value)}
-              className={`px-4 py-2 rounded-[10px] text-xs font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
                 period === p.value ? 'bg-[#0066FF] text-white' : 'bg-[#F5F7FA] text-[#6b7280]'
               }`}
             >
@@ -90,7 +82,7 @@ export function Activity() {
       </div>
 
       <div className="px-4 mt-3">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-white rounded-card p-4 mb-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl p-4 mb-3 shadow-sm">
           <div className="flex items-center gap-3">
             <BarChart3 size={20} color="#0066FF" />
             <div>
@@ -117,23 +109,34 @@ export function Activity() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  className="card-white rounded-card p-4 flex items-center justify-between"
+                  className="bg-white rounded-2xl p-4 shadow-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full ${cfg.bg} flex items-center justify-center`}>
-                      <cfg.icon size={18} color={cfg.color} />
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full ${cfg.bg} flex items-center justify-center`}>
+                        <cfg.icon size={18} color={cfg.color} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[#1a1a2e]">{t.linkDescription}</p>
+                        <p className="text-xs text-[#9ca3af]">{formatDateTime(t.date)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#1a1a2e]">{t.description}</p>
-                      <p className="text-xs text-[#9ca3af]">{formatDateTime(t.date)}</p>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${t.status === 'paid' ? 'text-green-600' : t.status === 'pending' ? 'text-yellow-600' : 'text-gray-400'}`}>
+                        {formatCurrency(t.amount)}
+                      </p>
+                      <p className="text-[10px] text-[#9ca3af]">{cfg.label}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-bold ${t.status === 'paid' ? 'text-green-600' : t.status === 'pending' ? 'text-yellow-600' : 'text-gray-400'}`}>
-                      {formatCurrency(t.amount)}
-                    </p>
-                    <p className="text-[10px] text-[#9ca3af]">{cfg.label}</p>
-                  </div>
+
+                  {t.customerName !== '—' && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                      <User size={12} color="#9ca3af" />
+                      <span className="text-xs text-[#6b7280]">
+                        {t.customerName} • {t.customerEmail}
+                      </span>
+                    </div>
+                  )}
                 </motion.div>
               )
             })}

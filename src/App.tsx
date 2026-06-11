@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { Capacitor } from '@capacitor/core'
 import { useAuthStore } from './stores/authStore'
 import { useNotificationsStore } from './stores/notificationsStore'
 import { useLinksStore } from './stores/linksStore'
@@ -42,6 +43,9 @@ function AppRoutes() {
 
   useEffect(() => {
     checkSession()
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/splash-screen').then(({ SplashScreen }) => SplashScreen.hide()).catch(() => {})
+    }
   }, [])
 
   useEffect(() => {
