@@ -21,6 +21,12 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     buildTypes {
+        debug {
+            archivesBaseName = "gatoapp"
+        }
+        release {
+            archivesBaseName = "gatoapp"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
