@@ -22,6 +22,7 @@ import { Withdraw } from './pages/Withdraw'
 import { Profile } from './pages/Profile'
 import { NotificationsPage } from './pages/Notifications'
 import { CheckoutPage } from './pages/CheckoutPage'
+import { DownloadApp } from './pages/DownloadApp'
 
 const showNavPaths = ['/dashboard', '/links', '/create-link', '/activity', '/profile']
 
@@ -71,6 +72,7 @@ function AppRoutes() {
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/notifications" element={isAuthenticated ? <NotificationsPage /> : <Navigate to="/login" />} />
           <Route path="/checkout/:slug" element={<CheckoutPage />} />
+          <Route path="/download" element={<DownloadApp />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AnimatePresence>

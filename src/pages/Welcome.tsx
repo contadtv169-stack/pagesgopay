@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Zap, Shield, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Zap, Shield, ArrowRight, Download, Smartphone } from 'lucide-react'
 
 const benefits = [
   { icon: Zap, text: 'Links de pagamento rápidos e personalizados' },
@@ -83,7 +83,7 @@ export function Welcome() {
         </motion.div>
       </div>
 
-      <div className="px-6 pb-10 space-y-3">
+      <div className="px-6 pb-6 space-y-3">
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,6 +104,17 @@ export function Welcome() {
           className="w-full text-center text-sm font-medium text-[#0066FF] py-2"
         >
           Já tenho uma conta
+        </motion.button>
+
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate('/download')}
+          className="w-full text-center text-xs text-[#9ca3af] py-1 flex items-center justify-center gap-1"
+        >
+          <Smartphone size={12} /> Baixar App Android
         </motion.button>
       </div>
     </div>

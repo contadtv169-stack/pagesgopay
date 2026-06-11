@@ -13,7 +13,6 @@
   html, body, #root {
     height: 100%;
     width: 100%;
-    overflow: hidden;
   }
 
   body {
@@ -35,23 +34,24 @@
 
 @layer components {
   .iphone-frame {
-    max-width: 393px;
     width: 100%;
-    height: 100vh;
-    max-height: 852px;
+    height: 100dvh;
     background: #fff;
-    border-radius: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
+    -webkit-overflow-scrolling: touch;
   }
 
   @media (min-width: 768px) {
     .iphone-frame {
+      max-width: 393px;
       height: 852px;
       border-radius: 55px;
       box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
     }
   }
 
