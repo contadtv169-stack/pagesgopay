@@ -50,7 +50,7 @@ export const useLinksStore = create<LinksState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               const { data } = await supabase.from('payment_links').select('*').eq('user_id', profile.id).order('created_at', { ascending: false })
               if (data) {
@@ -111,7 +111,7 @@ export const useLinksStore = create<LinksState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               const { data: inserted, error } = await supabase.from('payment_links').insert({
                 ...linkData,

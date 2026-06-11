@@ -30,12 +30,12 @@ export const useAuthStore = create<AuthState>()(
       checkSession: async () => {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('users')
             .select('*')
             .eq('auth_id', session.user.id)
-            .single()
-          if (profile) {
+            .maybeSingle()
+          if (profile && !error) {
             set({ user: { id: profile.id, name: profile.name, email: profile.email }, isAuthenticated: true })
           }
         }
@@ -47,15 +47,17 @@ export const useAuthStore = create<AuthState>()(
           const { data, error } = await supabase.auth.signInWithPassword({ email, password })
           if (error) throw error
           if (data.user) {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('users')
               .select('*')
               .eq('auth_id', data.user.id)
-              .single()
-            if (profile) {
+              .maybeSingle()
+            if (profile && !error) {
               set({ user: { id: profile.id, name: profile.name, email: profile.email }, isAuthenticated: true, loading: false })
               return true
             }
+            set({ user: { name: data.user.email || '', email: data.user.email || '' }, isAuthenticated: true, loading: false })
+            return true
           }
           throw new Error('Perfil não encontrado')
         } catch (err: any) {

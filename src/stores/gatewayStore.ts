@@ -120,7 +120,7 @@ export const useGatewayStore = create<GatewayState>()(
             if (data?.success) {
               const authUser = (await supabase.auth.getUser()).data.user
               if (authUser) {
-                const { data: profile } = await supabase.from('users').select('id').eq('auth_id', authUser.id).single()
+                const { data: profile } = await supabase.from('users').select('id').eq('auth_id', authUser.id).maybeSingle()
                 if (profile) {
                   const { data: gw } = await supabase.from('gateways').insert({
                     user_id: profile.id,

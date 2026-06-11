@@ -37,7 +37,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               const { data } = await supabase.from('notifications').select('*').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(50)
               if (data) {
@@ -60,9 +60,10 @@ export const useNotificationsStore = create<NotificationsState>()(
         const channel = supabase
           .channel('notifications-realtime')
           .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'notifications', filter: undefined },
+            { event: 'INSERT', schema: 'public', table: 'notifications' },
             (payload: any) => {
               const n = payload.new
+              if (!n) return
               const notif: Notification = {
                 id: n.id || genId(),
                 type: n.type,
@@ -74,7 +75,11 @@ export const useNotificationsStore = create<NotificationsState>()(
               set((state) => ({ notifications: [notif, ...state.notifications] }))
             }
           )
-          .subscribe()
+          .subscribe((status: string) => {
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              console.warn('Realtime subscription status:', status)
+            }
+          })
 
         return () => { supabase.removeChannel(channel) }
       },
@@ -91,7 +96,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               await supabase.from('notifications').insert({
                 user_id: profile.id,
@@ -109,7 +114,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               await supabase.from('notifications').update({ read: true }).eq('user_id', profile.id).eq('read', false)
             }
@@ -122,7 +127,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
-            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).single()
+            const { data: profile } = await supabase.from('users').select('id').eq('auth_id', user.id).maybeSingle()
             if (profile) {
               await supabase.from('notifications').delete().eq('user_id', profile.id)
             }
