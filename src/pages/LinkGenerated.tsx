@@ -141,10 +141,10 @@ export function LinkGenerated() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate(`/cakto-editor/${link.id}`)}
+          onClick={() => navigate(`/gopay-editor/${link.id}`)}
           className="btn-secondary"
         >
-          <Palette size={18} className="mr-2" /> Personalizar página (Cakto)
+          <Palette size={18} className="mr-2" /> Personalizar página (GoPay Editor)
         </motion.button>
 
         <motion.button

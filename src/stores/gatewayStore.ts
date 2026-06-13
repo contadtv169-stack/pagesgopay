@@ -135,9 +135,9 @@ export const useGatewayStore = create<GatewayState>()(
                     gatewayId: gw?.id || null,
                     balance: {
                       ...data.data,
-                      todayReceived: Math.floor(data.data.totalReceived * 0.1),
-                      monthReceived: Math.floor(data.data.totalReceived * 0.6),
-                      totalLinks: Math.floor(data.data.transactionsCount * 0.3),
+                      todayReceived: data.data.todayReceived ?? Math.floor(data.data.totalReceived * 0.1),
+                      monthReceived: data.data.monthReceived ?? Math.floor(data.data.totalReceived * 0.6),
+                      totalLinks: data.data.totalLinks ?? Math.floor(data.data.transactionsCount * 0.3),
                       totalPayments: data.data.transactionsCount,
                     },
                     loading: false,
@@ -171,13 +171,13 @@ export const useGatewayStore = create<GatewayState>()(
             const data = await testKryptConnection(state.credentials.ci, state.credentials.cs)
             if (data?.success) {
               set({
-                balance: {
-                  ...data.data,
-                  todayReceived: Math.floor(data.data.totalReceived * 0.1),
-                  monthReceived: Math.floor(data.data.totalReceived * 0.6),
-                  totalLinks: Math.floor(data.data.transactionsCount * 0.3),
-                  totalPayments: data.data.transactionsCount,
-                },
+                    balance: {
+                      ...data.data,
+                      todayReceived: data.data.todayReceived ?? Math.floor(data.data.totalReceived * 0.1),
+                      monthReceived: data.data.monthReceived ?? Math.floor(data.data.totalReceived * 0.6),
+                      totalLinks: data.data.totalLinks ?? Math.floor(data.data.transactionsCount * 0.3),
+                      totalPayments: data.data.transactionsCount,
+                    },
               })
             }
           } catch {}

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Bell, Eye, EyeOff, Plus, Link, BarChart3, Settings, ArrowUpRight, Wallet, AlertTriangle } from 'lucide-react'
+import { Bell, Eye, EyeOff, Plus, Link, BarChart3, Settings, ArrowUpRight, Wallet, AlertTriangle, Medal } from 'lucide-react'
 import { useGatewayStore } from '../stores/gatewayStore'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationsStore } from '../stores/notificationsStore'
+import { useLinksStore } from '../stores/linksStore'
 
 const quickActions = [
   { icon: Plus, label: 'Novo Link', path: '/create-link', color: '#0066FF' },
@@ -19,6 +20,7 @@ export function Dashboard() {
   const user = useAuthStore((s) => s.user)
   const unreadCount = useNotificationsStore((s) => s.unreadCount())
   const [showBalance, setShowBalance] = useState(true)
+  const links = useLinksStore((s) => s.links)
 
   useEffect(() => {
     if (connectedGateway) {
@@ -28,6 +30,12 @@ export function Dashboard() {
 
   const formatCurrency = (val: number) =>
     `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+  const allTransactions = links
+    .filter((l) => l.transactions && l.transactions.length > 0)
+    .flatMap((l) => (l.transactions || []).map((t) => ({ ...t, linkSlug: l.slug })))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
 
   if (!connectedGateway) {
     return (
@@ -74,12 +82,6 @@ export function Dashboard() {
     { label: 'Recebimentos do mês', value: formatCurrency(balance?.monthReceived || 0), color: '#0066FF' },
     { label: 'Total de links', value: String(balance?.totalLinks || 0), color: '#7c3aed' },
     { label: 'Total de pagamentos', value: String(balance?.totalPayments || 0), color: '#d97706' },
-  ]
-
-  const recentActivity = [
-    { amount: 150.00, time: 'Há 10 min' },
-    { amount: 89.90, time: 'Há 45 min' },
-    { amount: 250.00, time: 'Há 2h' },
   ]
 
   return (
@@ -157,35 +159,49 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-[#6b7280] uppercase tracking-wider">Atividade recente</h2>
-            <button onClick={() => navigate('/activity')} className="text-xs font-medium text-[#0066FF]">Ver todas</button>
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-[#6b7280] uppercase tracking-wider">Atividade recente</h2>
+              <button onClick={() => navigate('/activity')} className="text-xs font-medium text-[#0066FF]">Ver todas</button>
+            </div>
+
+            <div className="space-y-2">
+              {allTransactions.length === 0 ? (
+                <div className="card-white rounded-card p-6 text-center">
+                  <p className="text-sm text-[#9ca3af]">Nenhuma transação ainda</p>
+                  <button onClick={() => navigate('/create-link')} className="text-xs font-medium text-[#0066FF] mt-2">
+                    Criar primeiro link
+                  </button>
+                </div>
+              ) : (
+                allTransactions.map((item, i) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 * i }}
+                    className="card-white rounded-card p-4 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center">
+                        <ArrowUpRight size={18} color="#16a34a" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[#1a1a2e]">{item.customerName}</p>
+                        <p className="text-xs text-[#9ca3af]">{new Date(item.date).toLocaleString('pt-BR')}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold text-green-600">{formatCurrency(item.amount)}</p>
+                  </motion.div>
+                ))
+              )}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            {recentActivity.map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * i }}
-                className="card-white rounded-card p-4 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center">
-                    <ArrowUpRight size={18} color="#16a34a" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[#1a1a2e]">Pagamento recebido</p>
-                    <p className="text-xs text-[#9ca3af]">{item.time}</p>
-                  </div>
-                </div>
-                <p className="text-sm font-bold text-green-600">{formatCurrency(item.amount)}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+          <button onClick={() => navigate('/badges')} className="w-full mt-4 card-white rounded-card p-4 flex items-center gap-3">
+            <Medal size={20} color="#d97706" />
+            <span className="text-sm font-medium text-[#1a1a2e]">Ver Placas Digitais</span>
+          </button>
       </div>
     </div>
   )

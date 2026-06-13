@@ -17,7 +17,8 @@ import { LinkGenerated } from './pages/LinkGenerated'
 import { LinksList } from './pages/LinksList'
 import { LinkDetails } from './pages/LinkDetails'
 import { EditLink } from './pages/EditLink'
-import { CaktoEditor } from './pages/CaktoEditor'
+import { GoPayEditor } from './pages/GoPayEditor'
+import { Badges } from './pages/Badges'
 import { Activity } from './pages/Activity'
 import { Withdraw } from './pages/Withdraw'
 import { Profile } from './pages/Profile'
@@ -128,7 +129,9 @@ function AppRoutes() {
       <Route path="/links" element={isAuthenticated ? <LinksList /> : <Navigate to="/login" replace />} />
       <Route path="/link-details/:id" element={isAuthenticated ? <LinkDetails /> : <Navigate to="/login" replace />} />
       <Route path="/edit-link/:id" element={isAuthenticated ? <EditLink /> : <Navigate to="/login" replace />} />
-      <Route path="/cakto-editor/:id" element={isAuthenticated ? <CaktoEditor /> : <Navigate to="/login" replace />} />
+      <Route path="/cakto-editor/:id" element={isAuthenticated ? <GoPayEditor /> : <Navigate to="/login" replace />} />
+      <Route path="/gopay-editor/:id" element={isAuthenticated ? <GoPayEditor /> : <Navigate to="/login" replace />} />
+      <Route path="/badges" element={isAuthenticated ? <Badges /> : <Navigate to="/login" replace />} />
       <Route path="/activity" element={isAuthenticated ? <Activity /> : <Navigate to="/login" replace />} />
       <Route path="/withdraw" element={isAuthenticated ? <Withdraw /> : <Navigate to="/login" replace />} />
       <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />} />
