@@ -5,17 +5,19 @@ const config: CapacitorConfig = {
   appName: 'GoPay',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    // FIX: androidScheme https + NO hostname → assets carregam via capacitor://
+    androidScheme: 'https',
   },
   android: {
-    allowMixedContent: true
+    allowMixedContent: true,
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
-      backgroundColor: "#0066FF",
+      // FIX: launchAutoHide false → controlamos quando esconder via código
+      launchAutoHide: false,
+      backgroundColor: '#0066FF',
       showSpinner: false,
-      androidScaleType: "CENTER_CROP"
+      launchShowDuration: 0,
     }
   }
 };

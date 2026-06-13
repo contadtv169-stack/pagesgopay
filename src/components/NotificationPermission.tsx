@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import { Bell, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bell, X, BellOff, BellRing } from 'lucide-react'
 import { useNotificationsStore } from '../stores/notificationsStore'
 
 interface Props {
@@ -7,21 +7,10 @@ interface Props {
 }
 
 export function NotificationPermission({ onClose }: Props) {
-  const addNotification = useNotificationsStore((s) => s.addNotification)
+  const { requestPushPermission } = useNotificationsStore()
 
-  const handleAllow = () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then((perm) => {
-        if (perm === 'granted') {
-          new Notification('GoPay', { body: 'Notificações ativadas com sucesso!' })
-        }
-      })
-    }
-    addNotification({
-      type: 'gateway_connected',
-      title: 'Notificações ativadas',
-      message: 'Você receberá alertas de pagamentos em tempo real',
-    })
+  const handleAllow = async () => {
+    await requestPushPermission()
     onClose()
   }
 
@@ -50,29 +39,55 @@ export function NotificationPermission({ onClose }: Props) {
         <div className="flex flex-col items-center -mt-2">
           <motion.div
             initial={{ scale: 0 }}
-            animate={{ scale: 1, rotate: [0, -10, 10, -5, 0] }}
+            animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 rounded-full bg-[#0066FF]/10 flex items-center justify-center"
           >
-            <Bell size={36} color="#0066FF" />
+            <motion.div
+              animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              <BellRing size={38} color="#0066FF" />
+            </motion.div>
           </motion.div>
 
           <h2 className="text-2xl font-bold text-[#1a1a2e] mt-4">Ativar Notificações</h2>
-          <p className="text-[#6b7280] text-sm mt-1 text-center">
-            Receba alertas de pagamentos em tempo real
+          <p className="text-[#6b7280] text-sm mt-2 text-center leading-relaxed">
+            Receba alertas em tempo real quando um pagamento for confirmado
           </p>
+
+          <div className="w-full mt-5 space-y-2.5">
+            {[
+              { icon: '💰', text: 'Pagamentos confirmados na hora' },
+              { icon: '🔗', text: 'Links criados e expirados' },
+              { icon: '⚡', text: 'Alertas do gateway em tempo real' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="flex items-center gap-3 bg-[#F5F7FA] rounded-xl px-4 py-3"
+              >
+                <span className="text-xl">{item.icon}</span>
+                <p className="text-sm text-[#374151] font-medium">{item.text}</p>
+              </motion.div>
+            ))}
+          </div>
 
           <button
             onClick={handleAllow}
-            className="btn-primary mt-6"
+            className="btn-primary mt-6 flex items-center gap-2"
           >
-            Permitir
+            <Bell size={18} />
+            Ativar notificações
           </button>
 
           <button
             onClick={onClose}
-            className="w-full text-center text-sm font-medium text-[#6b7280] py-3 mt-2"
+            className="w-full text-center text-sm font-medium text-[#9ca3af] py-3 mt-1 flex items-center justify-center gap-1"
           >
+            <BellOff size={14} />
             Agora não
           </button>
         </div>

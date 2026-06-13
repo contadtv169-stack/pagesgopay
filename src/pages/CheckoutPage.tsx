@@ -1,6 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { useNotificationsStore } from '../stores/notificationsStore'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Copy, CheckCircle2, Clock, Loader2, Star, Shield, ChevronDown, ArrowRight, User, Mail, Lock } from 'lucide-react'
+import { Copy, CheckCircle2, Clock, Loader2, Star, Shield, ChevronDown, ArrowRight, User, Mail, Lock, ExternalLink } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useState, useEffect } from 'react'
 import { useLinksStore, Transaction } from '../stores/linksStore'
@@ -9,7 +10,6 @@ const COUNTDOWN_MINUTES = 30
 
 export function CheckoutPage() {
   const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
   const links = useLinksStore((s) => s.links)
   const updateLink = useLinksStore((s) => s.updateLink)
   const [link, setLink] = useState(useLinksStore.getState().links.find((l) => l.slug === slug))
@@ -30,6 +30,7 @@ export function CheckoutPage() {
       if (found.payments > 0) setPaymentStatus('paid')
     }
 
+    // Krypt gateway polling
     if (found?.transactionId && found.gatewayType === 'krypt') {
       const interval = setInterval(async () => {
         try {
@@ -41,19 +42,28 @@ export function CheckoutPage() {
             })
             const data = await res.json()
             if (data?.success && data.data?.status === 'paid') {
-              setPaymentStatus('paid')
-              const tx: Transaction = {
-                id: 'tx_' + Date.now(),
-                customerName: customerName || 'Cliente',
-                customerEmail: customerEmail || 'cliente@email.com',
-                amount: found.amount,
-                status: 'paid',
-                date: new Date().toISOString(),
-                paymentMethod: 'PIX',
-                transactionId: found.transactionId,
-              }
-              const existing = found.transactions || []
-              updateLink(found.id, { payments: found.payments + 1, views: found.views + 1, transactions: [...existing, tx] })
+              handlePaymentConfirmed(found, 'krypt')
+              clearInterval(interval)
+            }
+          }
+        } catch {}
+      }, 5000)
+      return () => clearInterval(interval)
+    }
+
+    // AbacatePay polling
+    if (found?.transactionId && found.gatewayType === 'abacate') {
+      const interval = setInterval(async () => {
+        try {
+          const { useGatewayStore } = await import('../stores/gatewayStore')
+          const { credentials } = useGatewayStore.getState()
+          if (credentials?.apiKey && credentials?.baseUrl) {
+            const res = await fetch(`${credentials.baseUrl}/api/v1/billing/${found.transactionId}`, {
+              headers: { 'Authorization': `Bearer ${credentials.apiKey}`, 'Content-Type': 'application/json' },
+            })
+            const data = await res.json()
+            if (data?.data?.status === 'PAID' || data?.status === 'PAID') {
+              handlePaymentConfirmed(found, 'abacate')
               clearInterval(interval)
             }
           }
@@ -62,6 +72,36 @@ export function CheckoutPage() {
       return () => clearInterval(interval)
     }
   }, [slug, links])
+
+  const handlePaymentConfirmed = (found: typeof link, gateway: string) => {
+    setPaymentStatus('paid')
+    // Fire notification
+    useNotificationsStore.getState().addNotification({
+      type: 'payment',
+      title: 'Pagamento confirmado! 💰',
+      message: `Recebido: ${found!.title || found!.description}`,
+      amount: found!.amount,
+    })
+    const tx: Transaction = {
+      id: 'tx_' + Date.now(),
+      customerName: customerName || 'Cliente',
+      customerEmail: customerEmail || 'cliente@email.com',
+      amount: found!.amount,
+      status: 'paid',
+      date: new Date().toISOString(),
+      paymentMethod: 'PIX',
+      transactionId: found!.transactionId,
+    }
+    const existing = found!.transactions || []
+    updateLink(found!.id, { payments: found!.payments + 1, transactions: [...existing, tx] })
+
+    // Auto-redirect after payment if configured
+    if (found?.redirectUrl) {
+      setTimeout(() => {
+        window.location.href = found.redirectUrl!
+      }, 3000)
+    }
+  }
 
   useEffect(() => {
     if (!showPayment) return
@@ -166,9 +206,17 @@ export function CheckoutPage() {
                 </div>
               )}
               {link.redirectUrl && (
-                <a href={link.redirectUrl} className="btn-primary mt-6 inline-flex items-center" style={{ background: isBrandColor }}>
-                  Continuar <ArrowRight size={18} className="ml-2" />
-                </a>
+                <div className="mt-4">
+                  <p className="text-xs text-gray-400 mb-3">Você será redirecionado automaticamente...</p>
+                  <a
+                    href={link.redirectUrl}
+                    className="btn-primary mt-2 inline-flex items-center gap-2"
+                    style={{ background: isBrandColor, boxShadow: `0 4px 15px ${isBrandColor}40` }}
+                  >
+                    <ExternalLink size={16} />
+                    Continuar <ArrowRight size={18} className="ml-1" />
+                  </a>
+                </div>
               )}
             </motion.div>
           ) : !showPayment ? (
@@ -226,7 +274,7 @@ export function CheckoutPage() {
                   className="btn-primary mt-4"
                   style={{ background: isBrandColor, boxShadow: `0 4px 15px ${isBrandColor}40` }}
                 >
-                  Ir para pagamento <ArrowRight size={18} className="ml-2" />
+                  {link.buttonText || 'Ir para pagamento'} <ArrowRight size={18} className="ml-2" />
                 </button>
 
                 <div className="flex items-center justify-center gap-1 mt-3 text-xs text-gray-400">
@@ -316,7 +364,7 @@ export function CheckoutPage() {
                   {link.qrCodeBase64 ? (
                     <img src={link.qrCodeBase64} alt="QR Code PIX" className="w-52 h-52" />
                   ) : (
-                    <QRCodeSVG value={link.url} size={200} level="M" />
+                    <QRCodeSVG value={link.paymentLink || link.url} size={200} level="M" />
                   )}
                 </div>
 
@@ -331,6 +379,20 @@ export function CheckoutPage() {
                     </div>
                     {copied && <p className="text-xs text-green-600 mt-1">Copiado!</p>}
                   </div>
+                )}
+
+                {/* AbacatePay direct link */}
+                {link.gatewayType === 'abacate' && link.paymentLink && (
+                  <a
+                    href={link.paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary mt-4 flex items-center justify-center gap-2"
+                    style={{ background: '#16a34a', boxShadow: '0 4px 15px #16a34a40' }}
+                  >
+                    <ExternalLink size={16} />
+                    Pagar via AbacatePay
+                  </a>
                 )}
 
                 <div className="mt-4 flex items-center gap-2 justify-center text-sm text-gray-400">
