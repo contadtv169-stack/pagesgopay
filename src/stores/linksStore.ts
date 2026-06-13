@@ -158,7 +158,7 @@ export const useLinksStore = create<LinksState>()(
           amount: data.amount,
           description: data.description,
           slug: data.slug || generateSlug(),
-          url: `https://gopay.me/${data.slug || generateSlug()}`,
+          url: `https://contadtv169-stack.github.io/pagesgopay/checkout/${data.slug || generateSlug()}`,
           expiration: data.expiration,
           status: 'active' as const,
           transaction_id: data.transactionId,
@@ -169,7 +169,7 @@ export const useLinksStore = create<LinksState>()(
           expires_at: expiresAt,
         }
 
-        linkData.url = `https://gopay.me/${linkData.slug}`
+        linkData.url = `https://contadtv169-stack.github.io/pagesgopay/checkout/${linkData.slug}`
 
         try {
           const { data: { user } } = await supabase.auth.getUser()
