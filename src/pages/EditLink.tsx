@@ -106,7 +106,7 @@ export function EditLink() {
           <div>
             <label className="text-sm font-medium text-[#6b7280] mb-1 block">URL</label>
             <div className="flex items-center bg-[#F5F7FA] rounded-[12px] px-4 h-[54px]">
-              <span className="text-[#6b7280] text-sm shrink-0">gopay.me/</span>
+              <span className="text-[#6b7280] text-sm shrink-0">pagesgopay/checkout/</span>
               <input className="flex-1 bg-transparent outline-none text-[16px] ml-1" value={slug} onChange={(e) => setSlug(e.target.value)} />
             </div>
           </div>

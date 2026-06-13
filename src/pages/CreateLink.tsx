@@ -157,7 +157,7 @@ export function CreateLink() {
           <div>
             <label className="text-sm font-medium text-[#6b7280] mb-1 block">URL personalizada</label>
             <div className="flex items-center bg-[#F5F7FA] rounded-[12px] px-4 h-[54px] border border-transparent focus-within:border-[#0066FF] focus-within:shadow-[0_0_0_3px_rgba(0,102,255,0.15)]">
-              <span className="text-[#6b7280] text-sm shrink-0">gopay.me/</span>
+              <span className="text-[#6b7280] text-sm shrink-0">pagesgopay/checkout/</span>
               <input
                 className="flex-1 bg-transparent outline-none text-[16px] text-[#1a1a2e] ml-1"
                 placeholder="consultoria"
