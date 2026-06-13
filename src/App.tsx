@@ -17,6 +17,7 @@ import { LinkGenerated } from './pages/LinkGenerated'
 import { LinksList } from './pages/LinksList'
 import { LinkDetails } from './pages/LinkDetails'
 import { EditLink } from './pages/EditLink'
+import { CaktoEditor } from './pages/CaktoEditor'
 import { Activity } from './pages/Activity'
 import { Withdraw } from './pages/Withdraw'
 import { Profile } from './pages/Profile'
@@ -116,8 +117,8 @@ function AppRoutes() {
 
   const routes = (
     <Routes>
-      <Route path="/" element={<Splash />} />
-      <Route path="/welcome" element={<Welcome />} />
+      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Splash />} />
+      <Route path="/welcome" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Welcome />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/connect-gateway" element={<ConnectGateway />} />
@@ -127,6 +128,7 @@ function AppRoutes() {
       <Route path="/links" element={isAuthenticated ? <LinksList /> : <Navigate to="/login" replace />} />
       <Route path="/link-details/:id" element={isAuthenticated ? <LinkDetails /> : <Navigate to="/login" replace />} />
       <Route path="/edit-link/:id" element={isAuthenticated ? <EditLink /> : <Navigate to="/login" replace />} />
+      <Route path="/cakto-editor/:id" element={isAuthenticated ? <CaktoEditor /> : <Navigate to="/login" replace />} />
       <Route path="/activity" element={isAuthenticated ? <Activity /> : <Navigate to="/login" replace />} />
       <Route path="/withdraw" element={isAuthenticated ? <Withdraw /> : <Navigate to="/login" replace />} />
       <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />} />

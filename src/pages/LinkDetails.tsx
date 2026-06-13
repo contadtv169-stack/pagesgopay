@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Copy, Edit3, ExternalLink, DollarSign, Calendar, Eye, BarChart3 } from 'lucide-react'
+import { ArrowLeft, Copy, Edit3, ExternalLink, DollarSign, Calendar, Eye, BarChart3, Palette } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useLinksStore } from '../stores/linksStore'
 import { useState } from 'react'
@@ -100,6 +100,17 @@ export function LinkDetails() {
             </div>
           </div>
         </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate(`/cakto-editor/${link.id}`)}
+          className="btn-secondary mt-4"
+        >
+          <Palette size={18} className="mr-2" /> Personalizar página (Cakto)
+        </motion.button>
 
         <motion.button
           initial={{ opacity: 0 }}
